@@ -7,7 +7,7 @@
 #######################################################################
 
 # Set to `-x` for Debug logging
-set +x
+set +x -u -o pipefail
 
 # Start the Server
 function start_server() {
@@ -66,7 +66,35 @@ function test_first_run() {
 function update_server() {
     printf "\n### Updating Generic SteamCMD Server...\n"
 
-    "$STEAM_PATH" +runscript "$STEAM_INSTALL_FILE"
+    install_success=1
+    retries=0
+
+    # Try at most MAX_RETRIES times to install the server
+    while [[ "$install_success" -ne 0 ]] && [[ "$retries" -lt "$MAX_RETRIES" ]]; do
+        printf "\n### Attempt %s to update Generic SteamCMD Server...\n" "$((retries + 1))"
+
+        # Redirect subshell output to STDOUT using a File Descriptor
+        exec 3>&1
+
+        # Attempt to update the server
+        steam_output=$("$STEAM_PATH" +runscript "$STEAM_INSTALL_FILE" | tee /dev/fd/3)
+
+        # Close the File Descriptor
+        exec 3>&-
+
+        # Check if the update was successful
+        if [[ $steam_output == *"<placeholder_initialisation_text>"* ]]; then
+            install_success=0
+        else
+            retries=$((retries + 1))
+        fi
+    done
+
+    # Exit is the installation was unsuccessful
+    if [[ "$install_success" -ne 0 ]]; then
+        printf "\n### Failed to update Generic SteamCMD Server.\n"
+        exit 1
+    fi
 
     printf "\n### Generic SteamCMD Server updated.\n"
 }
@@ -96,6 +124,7 @@ function set_variables() {
     printf "\n### Setting variables...\n"
 
     TIMEOUT="60"
+    MAX_RETRIES="5"
     STEAM_INSTALL_FILE="/home/steam/install_server.scmd"
     BASE_GAME_DIR="/home/steam/REPLACE_ME_INSTALL"
     CONFIG_DIR="/home/steam/REPLACE_ME_CONFIG"
@@ -136,9 +165,8 @@ function set_variables() {
     # Set the Server Password variable
     SERVER_PASSWORD=${SERVER_PASSWORD:-""}
 
-    SERVER_CONFIG="$CONFIG_DIR/Server/$SERVER_NAME.ini"
-    SERVER_VM_CONFIG="$BASE_GAME_DIR/ProjectZomboid64.json"
-    SERVER_RULES_CONFIG="$CONFIG_DIR/Server/${SERVER_NAME}_SandboxVars.lua"
+    SERVER_CONFIG="$CONFIG_DIR/Server/Config.ini"
+    SERVER_RULES_CONFIG="$CONFIG_DIR/Server/GameRules.ini"
 }
 
 ## Main
