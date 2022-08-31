@@ -17,11 +17,11 @@
 
 name: Build and Test Server Image
 
-#on:
-#  push:
-#    branches: [ main ]
-#  pull_request:
-#    branches: [ main ]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 defaults:
   run:
@@ -156,8 +156,8 @@ jobs:
         podman run \
           --rm \
           --name ${CONTAINER_NAME} \
-          --mount type=bind,source="$(pwd)/ZomboidDedicatedServer",target=/home/steam/ZomboidDedicatedServer \
-          --mount type=bind,source="$(pwd)/${CONFIG_DIR}",target=/home/steam/Zomboid \
+          --mount type=bind,source="$(pwd)/${INSTALL_DIR}",target=/home/steam/${INSTALL_DIR} \
+          --mount type=bind,source="$(pwd)/${CONFIG_DIR}",target=/home/steam/${CONFIG_DIR} \
           --env=AUTOSAVE_INTERVAL="16" \
           --env=GAME_PORT="25496" \
           --env=MAP_NAMES="BedfordFalls;North;South;West" \
