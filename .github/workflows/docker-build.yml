@@ -17,11 +17,11 @@
 
 name: Build and Test Server Image
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+#on:
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
 
 defaults:
   run:
@@ -82,17 +82,17 @@ jobs:
 
         # Run the Docker Image
         docker run \
-        --rm \
-        --name ${CONTAINER_NAME} \
-        --mount type=bind,source="$(pwd)/${INSTALL_DIR}",target=/home/steam/${INSTALL_DIR} \
-        --mount type=bind,source="$(pwd)/${CONFIG_DIR}",target=/home/steam/${CONFIG_DIR} \
-        --env=GAME_PORT="25496" \
-        --env=MAX_PLAYERS="14" \
-        --env=MAX_RAM="6144m" \
-        --env=PUBLIC_SERVER="false" \
-        --env=SERVER_NAME="GitHubActionTest" \
-        --env=SERVER_PASSWORD="github_action_test_password" \
-        docker.io/${IMAGE_NAMESPACE}/${IMAGE_NAME}:${{ steps.variables.outputs.datetime }} \
+          --rm \
+          --name ${CONTAINER_NAME} \
+          --mount type=bind,source="$(pwd)/${INSTALL_DIR}",target=/home/steam/${INSTALL_DIR} \
+          --mount type=bind,source="$(pwd)/${CONFIG_DIR}",target=/home/steam/${CONFIG_DIR} \
+          --env=GAME_PORT="25496" \
+          --env=MAX_PLAYERS="14" \
+          --env=MAX_RAM="6144m" \
+          --env=PUBLIC_SERVER="false" \
+          --env=SERVER_NAME="GitHubActionTest" \
+          --env=SERVER_PASSWORD="github_action_test_password" \
+          docker.io/${IMAGE_NAMESPACE}/${IMAGE_NAME}:${{ steps.variables.outputs.datetime }} \
         2>&1 | tee ./docker-log.log
 
     ###############################
@@ -158,21 +158,14 @@ jobs:
           --name ${CONTAINER_NAME} \
           --mount type=bind,source="$(pwd)/${INSTALL_DIR}",target=/home/steam/${INSTALL_DIR} \
           --mount type=bind,source="$(pwd)/${CONFIG_DIR}",target=/home/steam/${CONFIG_DIR} \
-          --env=AUTOSAVE_INTERVAL="16" \
           --env=GAME_PORT="25496" \
-          --env=MAP_NAMES="BedfordFalls;North;South;West" \
           --env=MAX_PLAYERS="14" \
           --env=MAX_RAM="6144m" \
-          --env=MOD_NAMES="BedfordFalls" \
-          --env=MOD_WORKSHOP_IDS="522891356" \
-          --env=PAUSE_ON_EMPTY="true" \
           --env=PUBLIC_SERVER="false" \
-          --env=RCON_PASSWORD="github_action_test_rcon_password" \
-          --env=RCON_PORT="27025" \
           --env=SERVER_NAME="GitHubActionTest" \
           --env=SERVER_PASSWORD="github_action_test_password" \
           docker.io/${IMAGE_NAMESPACE}/${IMAGE_NAME}:${{ steps.variables.outputs.datetime }} \
-          2>&1 | tee ./docker-log.log
+        2>&1 | tee ./docker-log.log
 
     - name: Investigate File Structure on Failure
       if: ${{ failure() }}
@@ -271,10 +264,8 @@ jobs:
           fi
         }
 
-        check_for_config "SaveWorldEveryMinutes=16"
         check_for_config "SteamPort1=25496"
         check_for_config "MaxPlayers=14"
-        check_for_config "PauseEmpty=true"
         check_for_config "Open=false"
         check_for_config "PublicName=GitHubActionTest"
         check_for_config "Password=github_action_test_password"
